@@ -1,3 +1,4 @@
+import os
 import argparse
 import numpy as np
 import jax.numpy as jnp
@@ -9,14 +10,15 @@ import matplotlib.pyplot as plt
 
 
 def parse_command():
-    parser = argparse.ArgumentParser('Porximal Gradient for Lasso')
+    parser = argparse.ArgumentParser('Proximal Solvers for Penalized Lasso')
     parser.add_argument('--A', default='data/A.mat', type=str, help='path to matrix A')
     parser.add_argument('--b', default='data/b.mat', type=str, help='path to vector b')
-    parser.add_argument('--gamma', default=0.2916, type=float, help='hyperparameter of regularization')
+    parser.add_argument('--gamma', default=0.3, type=float, help='hyperparameter of regularization')
     parser.add_argument('--opt', default='ISTA', type=str, choices=['ISTA', 'FISTA', 'ADMM'], help='optimizer for lasso')
     parser.add_argument('--tol', default=1e-6, type=float, help='absoluate tolerance')
     parser.add_argument('--max_iter', default=1000, type=int, help='maximum iterations')
     parser.add_argument('--silent', default=False, action='store_true', help='flag for printing opt process')
+    parser.add_argument('--output_dir', default='./output', type=str, help='output dir')
     args = parser.parse_args()
 
     return args
@@ -151,3 +153,10 @@ if __name__ == "__main__":
         print("nnz of x*: ", jnp.count_nonzero(model.z))
     else:
         print("nnz of x*: ", jnp.count_nonzero(model.x))
+
+    print('Writing the results...')
+    if not os.path.exists(args.output_dir):
+        os.mkdir(args.output_dir)
+    output_file = os.path.join(args.output_dir, '{}_{}.npy'.format(args.opt, args.gamma))
+    jnp.save(output_file, jnp.array(prox_optval))
+    print('Done')
